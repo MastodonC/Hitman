@@ -1,4 +1,4 @@
-(defproject hitman "0.1.0"
+(defproject hitman "0.2.0"
   :description "a clojure markdown engine"
   :url "http://github.com/chameco/Hitman"
   :license {:name "Eclipse Public License"
