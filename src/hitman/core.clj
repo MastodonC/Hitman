@@ -7,7 +7,7 @@
 
 (def parse-md
   (insta/parser
-    "<Blocks> = (Paragraph | Header | List | Ordered | Code | Rule)+
+    "<Blocks> = (Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
     Header = Line Headerline Blankline+
     <Headerline> = h1 | h2
     h1 = '='+
@@ -30,6 +30,7 @@
     <Whitespace> = #'(\\ | \\t)+'
     <Space> = ' '
     <Word> = #'\\S+'
+    Oneliner = Line
     <EOL> = <'\\n'>"))
 
 (def span-elems
@@ -56,7 +57,8 @@
       :Header [(first (last b)) (apply str (map parse-span (take (- (count b) 2) (drop 1 b))))]
       :Code [:pre [:code (interpose "<br />" (for [line (drop 1 b)] (drop 1 line)))]]
       :Rule [:hr]
-      :Paragraph [:p (map parse-span (drop 1 b))])))
+      :Paragraph [:p (map parse-span (drop 1 b))]
+      :Oneliner [:p (map parse-span (drop 1 b))])))
 
 (def markdown->hiccup (comp output-hiccup parse-md))
 
