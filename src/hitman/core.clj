@@ -1,10 +1,9 @@
 (ns hitman.core
   (:use [hiccup.core])
-  (:require [clojure.java.io :as io]
+  (:require [hiccup.page :as page]
+            [clojure.java.io :as io]
             [clojure.string :as string]
-            [instaparse.core :as insta]
-            [me.raynes.fs :as fs])
-  (:gen-class))
+            [instaparse.core :as insta]))
 
 (def parse-md
   (insta/parser
@@ -34,13 +33,13 @@
     <EOL> = <'\\n'>"))
 
 (def span-elems
-  [[#"!\[(\S+)\]\((\S+)\)" (fn [[n href]] (html [:img {:src href :alt n}]))]
-   [#"\[(\S+)\]\((\S+)\)"  (fn [[n href]] (html [:a {:href href} n]))]
-   [#"`(\S+)`"             (fn [s] (html [:code s]))]
-   [#"\*\*(\S+)\*\*"       (fn [s] (html [:strong s]))]
-   [#"__(\S+)__"           (fn [s] (html [:strong s]))]
-   [#"\*(\S+)\*"           (fn [s] (html [:em s]))]
-   [#"_(\S+)_"             (fn [s] (html [:em s]))]])
+  [[#"!\[(\S+)\]\((\S+)\)" (fn [[n href]] [:img {:src href :alt n}])]
+   [#"\[(\S+)\]\((\S+)\)"  (fn [[n href]] [:a {:href href} n])]
+   [#"`(\S+)`"             (fn [s] [:code s])]
+   [#"\*\*(\S+)\*\*"       (fn [s] [:strong s])]
+   [#"__(\S+)__"           (fn [s] [:strong s])]
+   [#"\*(\S+)\*"           (fn [s] [:em s])]
+   [#"_(\S+)_"             (fn [s] [:em s])]])
 
 (defn- parse-span [s]
   (let [res (first (filter (complement nil?)
@@ -49,18 +48,20 @@
                                (if groups (func (drop 1 groups)))))))]
     (if (nil? res) s res)))
 
-(defn- output-html [blocks]
-  (reduce str
-          (for [b blocks]
-            (case (first b)
-              :List (html [:ul (for [li (drop 1 b)] [:li (apply str (map parse-span (drop 1 li)))])])
-              :Ordered (html [:ol (for [li (drop 1 b)] [:li (apply str (map parse-span (drop 1 li)))])])
-              :Header (html [(first (last b)) (apply str (map parse-span (take (- (count b) 2) (drop 1 b))))])
-              :Code (html [:pre [:code (apply str (interpose "<br />" (for [line (drop 1 b)] (apply str (drop 1 line)))))]])
-              :Rule (html [:hr])
-              :Paragraph (html [:p (apply str (map parse-span (drop 1 b)))])))))
+(defn- output-hiccup [blocks]
+  (for [b blocks]
+    (case (first b)
+      :List [:ul (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
+      :Ordered [:ol (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
+      :Header [(first (last b)) (apply str (map parse-span (take (- (count b) 2) (drop 1 b))))]
+      :Code [:pre [:code (interpose "<br />" (for [line (drop 1 b)] (drop 1 line)))]]
+      :Rule [:hr]
+      :Paragraph [:p (map parse-span (drop 1 b))])))
 
-(def markdown-to-html (comp output-html parse-md))
+(def markdown->hiccup (comp output-hiccup parse-md))
+
+(defn markdown->html [path] (page/html5 (markdown->hiccup path)))
 
 (defn -main [path & args]
-  (spit (str (fs/base-name path true) ".html") (markdown-to-html (slurp path))))
+  (spit (str "test.html") (markdown->html (slurp path)))
+  (spit (str "test.hic") (markdown->hiccup (slurp path))))
