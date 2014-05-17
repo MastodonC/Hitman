@@ -7,7 +7,7 @@
 
 (def parse-md
   (insta/parser
-    "<Blocks> = (Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
+    "<Blocks> = (Blank | Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
     Header = Line Headerline Blankline+
     <Headerline> = h1 | h2
     h1 = '='+
@@ -23,15 +23,17 @@
     Rule = Ruleline Blankline+
     <Ruleline> = <'+'+ | '*'+ | '-'+>
     Paragraph = Line+ Blankline+
+    <Blank> = Whitespace*
     <Blankline> = Whitespace* EOL
     <Line> = Linepre Word (Whitespace Word)* Linepost EOL
     <Linepre> = (Space (Space (Space)? )? )?
     <Linepost> = Space?
-    <Whitespace> = #'(\\ | \\t)+'
+    <Whitespace> = (Space | Tab)+
     <Space> = ' '
+    <Tab> = <'\\t'>
     <Word> = #'\\S+'
-    Oneliner = Line
-    <EOL> = <'\\n'> | <'\\r\\n'>"))
+    Oneliner = Linepre Word (Whitespace Word)* Linepost
+    <EOL> = <'\\r'> | <'\\n'> | <'\\r\\n'>"))
 
 (def span-elems
   [[#"!\[(\S+)\]\((\S+)\)" (fn [[n href]] [:img {:src href :alt n}])]
