@@ -7,7 +7,7 @@
 
 (def parse-md
   (insta/parser
-    "<Blocks> = (Blank | Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
+    "<Blocks> = (Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
     Header = Line Headerline Blankline+
     <Headerline> = h1 | h2
     h1 = '='+
@@ -23,16 +23,15 @@
     Rule = Ruleline Blankline+
     <Ruleline> = <'+'+ | '*'+ | '-'+>
     Paragraph = Line+ Blankline+
-    <Blank> = Whitespace*
     <Blankline> = Whitespace* EOL
-    <Line> = Linepre Word (Whitespace Word)* Linepost EOL
+    <Line> = (<Tab> | Linepre Word) (Whitespace Word)* Linepost EOL
     <Linepre> = (Space (Space (Space)? )? )?
     <Linepost> = Space?
     <Whitespace> = (Space | Tab)+
     <Space> = ' '
     <Tab> = <'\\t'>
     <Word> = #'\\S+'
-    Oneliner = Linepre Word (Whitespace Word)* Linepost
+    Oneliner = Line
     <EOL> = <'\\r'> | <'\\n'> | <'\\r\\n'>"))
 
 (def span-elems
@@ -54,19 +53,19 @@
 (defn- output-hiccup [blocks]
   (for [b blocks]
     (case (first b)
-      :List [:ul (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
-      :Ordered [:ol (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
-      :Header [(first (last b)) (apply str (map parse-span (take (- (count b) 2) (drop 1 b))))]
-      :Code [:pre [:code (interpose "<br />" (for [line (drop 1 b)] (drop 1 line)))]]
-      :Rule [:hr]
+      :List      [:ul (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
+      :Ordered   [:ol (for [li (drop 1 b)] [:li (map parse-span (drop 1 li))])]
+      :Header    [(first (last b)) (apply str (map parse-span (take (- (count b) 2) (drop 1 b))))]
+      :Code      [:pre [:code (interpose "<br />" (for [line (drop 1 b)] (drop 1 line)))]]
+      :Rule      [:hr]
       :Paragraph [:p (map parse-span (drop 1 b))]
-      :Oneliner [:p (map parse-span (drop 1 b))])))
+      :Oneliner  [:p (map parse-span (drop 1 b))])))
 
 (def markdown->hiccup (comp output-hiccup parse-md))
 
 (defn markdown->html [path] (page/html5 (markdown->hiccup path)))
 
-(defn markdown [buffer] (html (markdown->hiccup buffer)))
+(defn markdown [buffer] (html (markdown->hiccup (str buffer "\n"))))
 
 (defn -main [path & args]
   (spit (str "test.html") (markdown->html (slurp path)))
