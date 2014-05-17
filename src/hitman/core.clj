@@ -7,7 +7,7 @@
 
 (def parse-md
   (insta/parser
-    "<Blocks> = (Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
+    "<Blocks> = Blankline* (Oneliner | Paragraph | Header | List | Ordered | Code | Rule)*
     Header = Line Headerline Blankline+
     <Headerline> = h1 | h2
     h1 = '='+

@@ -1,5 +1,9 @@
-Hitman [![Dependency Status](http://www.versioneye.com/clojure/hitman:hitman/0.1.0/badge.png)](http://www.versioneye.com/clojure/hitman:hitman/0.1.0)
+Hitman
 ======
+
+This is a fork of Hitman that aims to extend functionality and add a test suite.
+
+(Original `README` follows)
 
 Hitman is a Markdown parser, currently implemented in <100 lines of Clojure using [Instaparse](https://github.com/Engelberg/instaparse) and [Hiccup](https://github.com/weavejester/hiccup). There are a few features of Markdown that aren't yet supported (such as reference-style links and images, and Atx-style headers), but it generally works reasonably well. Obviously, there are some quirks to work out, but it's usable in its current state. If nothing else, I hope people can learn a bit about the fantastic Instaparse by looking at the code, as that was my own primary motivation for creating this.
 
