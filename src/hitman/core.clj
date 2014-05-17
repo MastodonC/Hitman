@@ -7,9 +7,9 @@
 
 (def parse-md
   (insta/parser
-    "<Blocks> = (Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
+    "<Blocks> = (Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
     Header = Line Headerline Blankline+
-    <Headerline> = h1 | h2
+    <Headerline> = h1 | h2,
     h1 = '='+
     h2 = '-'+
     List = Listline+ Blankline+
@@ -31,7 +31,7 @@
     <Space> = ' '
     <Word> = #'\\S+'
     Oneliner = Line
-    <EOL> = <'\\n'>"))
+    <EOL> = <'\\n'> | <'\\r\\n'>"))
 
 (def span-elems
   [[#"!\[(\S+)\]\((\S+)\)" (fn [[n href]] [:img {:src href :alt n}])]
@@ -63,6 +63,8 @@
 (def markdown->hiccup (comp output-hiccup parse-md))
 
 (defn markdown->html [path] (page/html5 (markdown->hiccup path)))
+
+(defn markdown [buffer] (html (markdown->hiccup buffer)))
 
 (defn -main [path & args]
   (spit (str "test.html") (markdown->html (slurp path)))

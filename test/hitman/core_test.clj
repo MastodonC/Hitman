@@ -1,7 +1,9 @@
 (ns hitman.core-test
   (:use clojure.test
-        hitman.core))
+        [hitman.core :only [markdown]]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest empty-input
+  (is (= "" (markdown "")))
+  (is (= "" (markdown "\n\n\n")))
+  (is (= "" (markdown "\r\n\r\n")))
+  (is (= "" (markdown "\t\t\t"))))
