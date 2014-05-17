@@ -9,7 +9,7 @@
   (insta/parser
     "<Blocks> = (Blankline | Oneliner | Paragraph | Header | List | Ordered | Code | Rule)+
     Header = Line Headerline Blankline+
-    <Headerline> = h1 | h2,
+    <Headerline> = h1 | h2
     h1 = '='+
     h2 = '-'+
     List = Listline+ Blankline+
